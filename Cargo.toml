@@ -1,5 +1,5 @@
 [package]
-name = "window-info"
+name = "language-handler"
 version = "0.1.0"
 edition = "2021"
 
