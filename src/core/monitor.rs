@@ -11,6 +11,16 @@ use objc::{class, msg_send, sel, sel_impl};
 use std::ffi::CStr;
 use std::os::raw::c_char;
 
+/// Updates the global state with the name of the current active window.
+///
+/// # Safety
+///
+/// This function is unsafe because:
+/// 1. It calls FFI functions (Objective-C runtime via `msg_send!`) to interact with macOS APIs.
+/// 2. It writes to the `static mut` variable `state::CURRENT_APP`.
+///
+///     The caller must ensure that access to `state::CURRENT_APP` is synchronized if
+///     the application is or becomes multi-threaded.
 pub unsafe fn update_active_window() {
     let workspace: id = msg_send![class!(NSWorkspace), sharedWorkspace];
     let active_app: id = msg_send![workspace, frontmostApplication];
@@ -27,6 +37,15 @@ pub unsafe fn update_active_window() {
     }
 }
 
+/// Updates the global state with information about the current keyboard layout.
+///
+/// # Safety
+///
+/// This function is unsafe because:
+/// 1. It calls numerous FFI functions (TIS... and CF...) to interact with macOS APIs.
+/// 2. It writes to the `static mut` variable `state::CURRENT_KEYBOARD_LAYOUT`.
+///     The caller must ensure that access to `state` (specifically
+///     `state::CURRENT_KEYBOARD_LAYOUT`) is synchronized if the application is or becomes multi-threaded.
 pub unsafe fn update_keyboard_layout() {
     let input_source = TISCopyCurrentKeyboardInputSource();
     if input_source == nil {

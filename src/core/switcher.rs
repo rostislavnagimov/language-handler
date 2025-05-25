@@ -15,7 +15,7 @@ use std::os::raw::c_char;
 use std::thread;
 use std::time::Duration;
 
-pub unsafe fn is_target_layout(current_layout: &str, target_layout: &str) -> bool {
+pub fn is_target_layout(current_layout: &str, target_layout: &str) -> bool {
     match target_layout.to_uppercase().as_str() {
         "US" | "EN" | "ENGLISH" => {
             current_layout.contains("U.S.")
@@ -29,24 +29,61 @@ pub unsafe fn is_target_layout(current_layout: &str, target_layout: &str) -> boo
                 || current_layout.contains("Русская")
                 || current_layout.contains("com.apple.keylayout.Russian")
         }
+        "CN" | "CHINESE" | "PINYIN" | "ZH" => {
+            current_layout.to_uppercase().contains("PINYIN")
+                || current_layout.to_uppercase().contains("SIMPLIFIED")
+                || current_layout.contains("简体")
+                || current_layout.contains("com.apple.keylayout.PinyinSimplified")
+                || current_layout.contains("com.apple.inputmethod.SCIM.Pinyin")
+        }
+        "HI" | "HINDI" | "DEVANAGARI" => {
+            current_layout.to_uppercase().contains("HINDI")
+                || current_layout.to_uppercase().contains("DEVANAGARI")
+                || current_layout.contains("देवनागरी")
+                || current_layout.contains("com.apple.keylayout.Devanagari-QWERTY")
+                || current_layout.contains("com.apple.keylayout.Hindi-QWERTY")
+        }
         _ => current_layout
             .to_uppercase()
             .contains(&target_layout.to_uppercase()),
     }
 }
 
+/// Attempts to switch the system keyboard layout to the specified target layout string.
+///
+/// # Safety
+///
+/// This function is unsafe because:
+/// 1. It calls numerous FFI functions (TIS... and CF...) to interact with macOS APIs.
+/// 2. It directly manipulates system-wide state (the active keyboard layout).
+/// 3. It calls `monitor::update_keyboard_layout()`, which is also unsafe.
+///     The caller is responsible for ensuring that `target_layout` represents a valid
+///     intended layout name or identifier.
 pub unsafe fn switch_to_layout(target_layout: &str) {
     let target_upper = target_layout.to_uppercase();
 
     let search_patterns = match target_upper.as_str() {
         "US" | "EN" | "ENGLISH" => vec!["com.apple.keylayout.US", "com.apple.keylayout.ABC", "US"],
         "RU" | "RUSSIAN" => vec!["com.apple.keylayout.Russian", "Russian"],
+        "CN" | "CHINESE" | "PINYIN" | "ZH" => vec![
+            "com.apple.keylayout.PinyinSimplified",
+            "com.apple.inputmethod.SCIM.Pinyin",
+            "Pinyin",
+            "简体",
+        ],
+        "HI" | "HINDI" | "DEVANAGARI" => vec![
+            "com.apple.keylayout.Devanagari-QWERTY",
+            "com.apple.keylayout.Hindi-QWERTY",
+            "Hindi",
+            "Devanagari",
+            "देवनागरी",
+        ],
         _ => vec![target_layout],
     };
 
     if target_upper == "US" || target_upper == "EN" || target_upper == "ENGLISH" {
         let us_lang =
-            CFStringCreateWithCString(nil, "en\0".as_ptr() as *const c_char, K_UTF8_ENCODING);
+            CFStringCreateWithCString(nil, c"en".as_ptr() as *const c_char, K_UTF8_ENCODING);
         if us_lang != nil {
             let us_source = TISCopyInputSourceForLanguage(us_lang);
             CFRelease(us_lang);
@@ -151,6 +188,17 @@ pub unsafe fn switch_to_layout(target_layout: &str) {
     println!("Failed to switch to layout: {}", target_layout);
 }
 
+/// Checks configured rules and, if necessary, initiates a keyboard layout switch.
+///
+/// # Safety
+///
+/// This function is unsafe because:
+/// 1. It reads from `static mut` variables (`state::CURRENT_APP`,
+///    `state::APP_LAYOUT_RULES`, `state::CURRENT_KEYBOARD_LAYOUT`) via raw pointers.
+/// 2. It calls `is_target_layout` and `switch_to_layout`, which are part of an unsafe API.
+///
+///     The caller must ensure that access to `state` variables is synchronized if
+///     the application is or becomes multi-threaded.
 pub unsafe fn check_and_switch_layout_by_rules() {
     if let (Some(ref app_name), Some(ref rules)) = (
         &*std::ptr::addr_of!(state::CURRENT_APP),
