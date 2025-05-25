@@ -2,7 +2,7 @@
 
 **A utility to automatically switch your macOS keyboard layout based on the active application.**
 
-### Disclaimer: Test with caution! This is a pre-alpha version!
+### Disclaimer: Test with caution! This is a pre-alpha version! Macs on ARM ONLY!!!
 
 ## Why?
 
