@@ -2,7 +2,7 @@ use crate::core::{monitor, switcher};
 use crate::state;
 
 use cocoa::base::{id, nil};
-use cocoa::foundation::NSString;
+use cocoa::foundation::{NSString, NSAutoreleasePool};
 use objc::declare::ClassDecl;
 use objc::runtime::{Object, Sel};
 use objc::{class, msg_send, sel, sel_impl};
@@ -27,6 +27,7 @@ fn create_observer_class() -> *const objc::runtime::Class {
 }
 
 extern "C" fn app_changed_callback(_self: &Object, _cmd: Sel, _notification: id) {
+    let _pool = unsafe { NSAutoreleasePool::new(nil) };
     unsafe {
         monitor::update_active_window();
         monitor::update_keyboard_layout();
@@ -42,6 +43,7 @@ extern "C" fn app_changed_callback(_self: &Object, _cmd: Sel, _notification: id)
 }
 
 extern "C" fn keyboard_changed_callback(_self: &Object, _cmd: Sel, _notification: id) {
+    let _pool = unsafe { NSAutoreleasePool::new(nil) };
     unsafe {
         monitor::update_keyboard_layout();
 
