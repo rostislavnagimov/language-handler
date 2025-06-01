@@ -70,40 +70,57 @@ Once everything is set up, Language Handler will automatically change your keybo
 
 2.  **Unzip and Run**
 
-        * Unzip the archive (e.g., by double-clicking it in Finder, or using `unzip language-handler-macos-arm.zip` in Terminal).
+- Unzip the archive (e.g., by double-clicking it in Finder, or using `unzip language-handler-macos-arm.zip` in Terminal).
 
-        * Install as service (recommended):
+- Run the `language-handler` binary (e.g., by double-clicking it or running `./language-handler` in Terminal if you are in the same directory).
 
-        * Or run the `language-handler` binary (e.g., by double-clicking it or running `./language-handler` in Terminal if you are in the same directory):
+- **Option A: Install as service (recommended)**:
 
-    You will see a new Terminal window appear with logs from the tool. **The current version requires this Terminal window to remain open while the tool is working.** You can hide or minimize this window, but please don't close it if you want the tool to keep running.
+  ```bash
+  ./language-handler install
+  ```
 
-    On the first launch, a `config.json` file will be created with default rules. This is a starting point, but you'll likely want to customize it.
+  When installed as a service, the app runs automatically in the background. You can close the terminal - the service will continue running and start automatically on login.
 
-    **Important:** To apply any changes made to the `config.json` file, you need to:
+- **Option B: Run manually**:
 
-    1.  Stop the currently running version of Language Handler (by closing its Terminal window or pressing `Ctrl+C` in that window).
-    2.  Run it again.
+  ```bash
+  ./language-handler
+  ```
+
+  When running manually, **you must keep the terminal window open**. The app will stop if you close the terminal or press Ctrl+C.
+
+On the first launch, a `config.json` file will be created with default rules. This is a starting point, but you'll likely want to customize it.
+
+**Important:** To apply any changes made to the `config.json` file, you need to:
+
+1.  Stop the currently running version of Language Handler (by closing its Terminal window or pressing `Ctrl+C` in that window).
+2.  Run it again.
 
 3.  **Edit the Configuration File**
     To edit your `config.json` file, copy and paste this command into your Terminal:
 
-    ```
-    open "$HOME/Library/Application Support/language-handler/config.json"
-    ```
+```
 
-    This will open the config file in your default text editor. After you've set your rules, save the changes and restart Language Handler as described above.
+open "$HOME/Library/Application Support/language-handler/config.json"
 
-    **Example `config.json`:**
+```
 
-    ```json
-    {
-      "Terminal": "EN",
-      "iTerm2": "EN",
-      "Google Chrome": "EN",
-      "Telergam": "RU"
-    }
-    ```
+This will open the config file in your default text editor. After you've set your rules, save the changes and restart Language Handler:
+
+- **If running as service**: `./language-handler uninstall` then `./language-handler install`
+- **If running manually**: Stop the app (Ctrl+C) and run `./language-handler` again
+
+**Example `config.json`:**
+
+```json
+{
+  "Terminal": "EN",
+  "iTerm2": "EN",
+  "Google Chrome": "EN",
+  "Telergam": "RU"
+}
+```
 
 ## Building from Source (Optional)
 
@@ -127,7 +144,3 @@ Also you can rate the repo, I will really appreciate that.
 ## License
 
 Working under my personal 'I Don't Care' licence, free to use for everyone, go ahead.
-
-```
-
-```
