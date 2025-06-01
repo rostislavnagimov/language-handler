@@ -4,6 +4,9 @@ use cocoa::foundation::NSAutoreleasePool;
 
 pub mod core;
 
+// Re-export service functions for convenience
+pub use core::service::{install_service, uninstall_service, check_service_status};
+
 pub(crate) mod state {
     use std::collections::HashMap;
 

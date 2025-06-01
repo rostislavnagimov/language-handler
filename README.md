@@ -4,6 +4,12 @@
 
 ### Disclaimer: Test with caution! This is a pre-alpha version! Macs on ARM ONLY!!!
 
+### Features
+
+- **Automatic keyboard layout switching** based on active application
+- **Service management** - install as background service with auto-start
+- **CLI interface** with commands: install, uninstall, status, logs
+
 ## Why?
 
 Anyone who uses more than one keyboard layout daily knows the struggle: the person who designed the layout switching flow for macOS probably only uses one language and doesn't rely on their own feature. Otherwise, I can't explain why it's still so cumbersome.
@@ -16,62 +22,110 @@ So, I built this tool to save my time and nerves. I originally built it for myse
 
 When you first run Language Handler, it creates a configuration file. This config file is simple: `"%APP_NAME%": "%LANGUAGE_CODE%"`.
 
-* **`%APP_NAME%`**: The name of the application (e.g., "Terminal", "Google Chrome").
-* **`%LANGUAGE_CODE%`**: A short code for your desired layout.
+- **`%APP_NAME%`**: The name of the application (e.g., "Terminal", "Google Chrome").
+- **`%LANGUAGE_CODE%`**: A short code for your desired layout.
 
 **Currently supported language codes (for the config file):**
-* `EN` (English/US)
-* `RU` (Russian)
-* `CN` (Chinese - Simplified Pinyin)
-* `HI` (Hindi - Devanagari QWERTY)
+
+- `EN` (English/US)
+- `RU` (Russian)
+- `CN` (Chinese - Simplified Pinyin)
+- `HI` (Hindi - Devanagari QWERTY)
 
 **Not sure about the application name?** Check the tool's log output (the Terminal window it opens). When you focus on an application window, its name will be shown there.
 
 Once everything is set up, Language Handler will automatically change your keyboard layout when you focus on an application listed in your config file.
+
+## CLI Commands
+
+```bash
+# Install as background service (auto-start on login)
+./language-handler install
+
+# Check service status
+./language-handler status
+
+# View logs
+./language-handler logs
+
+# Uninstall service
+./language-handler uninstall
+
+# Show help
+./language-handler help
+```
 
 ## How to Use
 
 1.  **Download the Binary**
 
     Run this command in your Terminal:
+
     ```
     curl -LO https://github.com/rostislavnagimov/language-handler/releases/download/v0.0.1/language-handler-macos-arm.zip
     ```
+
     The `.zip` archive will be downloaded to your current working directory.
-    *Note: If you download the file through a web browser, macOS might warn you about an "Unknown developer" or even prevent you from running the tool. Using `curl` as shown above usually avoids these issues.*
+    _Note: If you download the file through a web browser, macOS might warn you about an "Unknown developer" or even prevent you from running the tool. Using `curl` as shown above usually avoids these issues._
 
-3.  **Unzip and Run**
-    * Unzip the archive (e.g., by double-clicking it in Finder, or using `unzip language-handler-macos-arm.zip` in Terminal).
-    * Run the `language-handler` binary (e.g., by double-clicking it or running `./language-handler` in Terminal if you are in the same directory).
+2.  **Unzip and Run**
 
-    You will see a new Terminal window appear with logs from the tool. **The current version requires this Terminal window to remain open while the tool is working.** You can hide or minimize this window, but please don't close it if you want the tool to keep running.
+- Unzip the archive (e.g., by double-clicking it in Finder, or using `unzip language-handler-macos-arm.zip` in Terminal).
 
-    On the first launch, a `config.json` file will be created with default rules. This is a starting point, but you'll likely want to customize it.
+- Run the `language-handler` binary (e.g., by double-clicking it or running `./language-handler` in Terminal if you are in the same directory).
 
-    **Important:** To apply any changes made to the `config.json` file, you need to:
-    1.  Stop the currently running version of Language Handler (by closing its Terminal window or pressing `Ctrl+C` in that window).
-    2.  Run it again.
+- **Option A: Install as service (recommended)**:
 
-4.  **Edit the Configuration File**
+  ```bash
+  ./language-handler install
+  ```
+
+  When installed as a service, the app runs automatically in the background. You can close the terminal - the service will continue running and start automatically on login.
+
+- **Option B: Run manually**:
+
+  ```bash
+  ./language-handler
+  ```
+
+  When running manually, **you must keep the terminal window open**. The app will stop if you close the terminal or press Ctrl+C.
+
+On the first launch, a `config.json` file will be created with default rules. This is a starting point, but you'll likely want to customize it.
+
+**Important:** To apply any changes made to the `config.json` file, you need to:
+
+1.  Stop the currently running version of Language Handler (by closing its Terminal window or pressing `Ctrl+C` in that window).
+2.  Run it again.
+
+3.  **Edit the Configuration File**
     To edit your `config.json` file, copy and paste this command into your Terminal:
-    ```
-    open "$HOME/Library/Application Support/language-handler/config.json"
-    ```
-    This will open the config file in your default text editor. After you've set your rules, save the changes and restart Language Handler as described above.
 
-    **Example `config.json`:**
-    ```json
-    {
-      "Terminal": "EN",
-      "iTerm2": "EN",
-      "Google Chrome": "EN",
-      "Telergam": "RU"
-    }
-    ```
+```
+
+open "$HOME/Library/Application Support/language-handler/config.json"
+
+```
+
+This will open the config file in your default text editor. After you've set your rules, save the changes and restart Language Handler:
+
+- **If running as service**: `./language-handler uninstall` then `./language-handler install`
+- **If running manually**: Stop the app (Ctrl+C) and run `./language-handler` again
+
+**Example `config.json`:**
+
+```json
+{
+  "Terminal": "EN",
+  "iTerm2": "EN",
+  "Google Chrome": "EN",
+  "Telergam": "RU"
+}
+```
 
 ## Building from Source (Optional)
 
 If you prefer to build from source:
+
 1.  Ensure you have Rust installed: [https://www.rust-lang.org/tools/install](https://www.rust-lang.org/tools/install)
 2.  Clone this repository.
 3.  Navigate to the project directory and run `cargo build --release`.
@@ -79,7 +133,7 @@ If you prefer to build from source:
 
 ## Contributing
 
-First you can donate me on Solana : ```pG9TZUjpmtbbvMU8MjKpjbdvBcXLcHWQsyM2Qqq4BpB```
+First you can donate me on Solana : `pG9TZUjpmtbbvMU8MjKpjbdvBcXLcHWQsyM2Qqq4BpB`
 
 Second you can offer me a job: [resume with all the contact data](https://drive.google.com/file/d/1o8lOwgBqpbccm-I-g5rkBLs4DM9qTqD7/view)
 
@@ -89,4 +143,4 @@ Also you can rate the repo, I will really appreciate that.
 
 ## License
 
- Working under my personal 'I Don't Care' licence, free to use for everyone, go ahead.
+Working under my personal 'I Don't Care' licence, free to use for everyone, go ahead.
