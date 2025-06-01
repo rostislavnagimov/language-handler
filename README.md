@@ -8,7 +8,6 @@
 
 - **Automatic keyboard layout switching** based on active application
 - **Service management** - install as background service with auto-start
-- **Log rotation** - automatic log management to prevent disk space issues
 - **CLI interface** with commands: install, uninstall, status, logs
 
 ## Why?
@@ -71,15 +70,11 @@ Once everything is set up, Language Handler will automatically change your keybo
 
 2.  **Unzip and Run**
 
-        - Unzip the archive (e.g., by double-clicking it in Finder, or using `unzip language-handler-macos-arm.zip` in Terminal).
+        * Unzip the archive (e.g., by double-clicking it in Finder, or using `unzip language-handler-macos-arm.zip` in Terminal).
 
-        - **Install as service** (recommended):
+        * Install as service (recommended):
 
-    ```bash
-        ./language-handler install
-    ```
-
-    - **Or run the `language-handler` binary (e.g., by double-clicking it or running `./language-handler` in Terminal if you are in the same directory):**
+        * Or run the `language-handler` binary (e.g., by double-clicking it or running `./language-handler` in Terminal if you are in the same directory):
 
     You will see a new Terminal window appear with logs from the tool. **The current version requires this Terminal window to remain open while the tool is working.** You can hide or minimize this window, but please don't close it if you want the tool to keep running.
 
