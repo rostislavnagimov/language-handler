@@ -1,0 +1,17 @@
+[package]
+name = "lh-gui"
+version.workspace = true
+edition.workspace = true
+
+[lints.rust]
+unexpected_cfgs = "allow"
+
+[[bin]]
+name = "lh-gui"
+path = "src/main.rs"
+
+[dependencies]
+common = { path = "../common" }
+cocoa.workspace = true
+objc.workspace = true
+serde_json.workspace = true

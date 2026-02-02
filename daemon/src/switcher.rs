@@ -1,10 +1,10 @@
-use crate::core::macos_api::{
+use common::macos_api::{
     CFArrayGetCount, CFArrayGetValueAtIndex, CFGetTypeID, CFRelease, CFStringCreateWithCString,
     CFStringGetCString, CFStringGetLength, CFStringGetTypeID, TISCopyInputSourceForLanguage,
     TISCreateInputSourceList, TISGetInputSourceProperty, TISSelectInputSource,
     K_TIS_PROPERTY_INPUT_SOURCE_ID, K_TIS_PROPERTY_LOCALIZED_NAME, K_UTF8_ENCODING,
 };
-use crate::core::monitor;
+use crate::monitor;
 use crate::state;
 
 use cocoa::base::nil;

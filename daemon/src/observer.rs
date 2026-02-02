@@ -1,4 +1,4 @@
-use crate::core::{monitor, switcher};
+use crate::{monitor, switcher};
 use crate::state;
 
 use cocoa::base::{id, nil};

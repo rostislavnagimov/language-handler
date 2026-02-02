@@ -2,15 +2,7 @@ use serde_json;
 use std::collections::HashMap;
 use std::fs;
 use std::path::{Path, PathBuf};
-
-pub fn get_config_path() -> PathBuf {
-    let home = std::env::var("HOME").unwrap_or_else(|_| "/Users/default".to_string());
-    Path::new(&home)
-        .join("Library")
-        .join("Application Support")
-        .join("language-handler")
-        .join("config.json")
-}
+use crate::paths::get_config_path;
 
 fn create_default_config() -> HashMap<String, String> {
     let mut config = HashMap::new();

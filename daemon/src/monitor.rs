@@ -1,4 +1,4 @@
-use crate::core::macos_api::{
+use common::macos_api::{
     CFGetTypeID, CFRelease, CFStringGetCString, CFStringGetLength, CFStringGetTypeID,
     TISCopyCurrentKeyboardInputSource, TISGetInputSourceProperty, K_TIS_PROPERTY_INPUT_SOURCE_ID,
     K_TIS_PROPERTY_LOCALIZED_NAME, K_UTF8_ENCODING,
