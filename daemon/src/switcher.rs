@@ -16,37 +16,24 @@ use std::thread;
 use std::time::Duration;
 
 pub fn is_target_layout(current_layout: &str, target_layout: &str) -> bool {
-    match target_layout.to_uppercase().as_str() {
-        "US" | "EN" | "ENGLISH" => {
-            current_layout.contains("U.S.")
-                || current_layout.contains("US")
-                || current_layout.contains("English")
-                || current_layout.contains("com.apple.keylayout.US")
-                || current_layout.contains("ABC")
+    let target_upper = target_layout.to_uppercase();
+    // Split by non-alphanumeric to get tokens (e.g. "com", "apple", "keylayout", "US")
+    let current_tokens: Vec<&str> = current_layout
+        .split(|c: char| !c.is_alphanumeric())
+        .collect();
+        
+    for token in current_tokens {
+        if token.to_uppercase() == target_upper {
+            return true;
         }
-        "RU" | "RUSSIAN" => {
-            current_layout.contains("Russian")
-                || current_layout.contains("Русская")
-                || current_layout.contains("com.apple.keylayout.Russian")
-        }
-        "CN" | "CHINESE" | "PINYIN" | "ZH" => {
-            current_layout.to_uppercase().contains("PINYIN")
-                || current_layout.to_uppercase().contains("SIMPLIFIED")
-                || current_layout.contains("简体")
-                || current_layout.contains("com.apple.keylayout.PinyinSimplified")
-                || current_layout.contains("com.apple.inputmethod.SCIM.Pinyin")
-        }
-        "HI" | "HINDI" | "DEVANAGARI" => {
-            current_layout.to_uppercase().contains("HINDI")
-                || current_layout.to_uppercase().contains("DEVANAGARI")
-                || current_layout.contains("देवनागरी")
-                || current_layout.contains("com.apple.keylayout.Devanagari-QWERTY")
-                || current_layout.contains("com.apple.keylayout.Hindi-QWERTY")
-        }
-        _ => current_layout
-            .to_uppercase()
-            .contains(&target_layout.to_uppercase()),
     }
+    
+    // Fallback: If target has spaces (e.g. "Russian - PC"), try exact substring match if token fails
+    if target_layout.contains(' ') {
+        return current_layout.to_uppercase().contains(&target_upper);
+    }
+    
+    false
 }
 
 /// Attempts to switch the system keyboard layout to the specified target layout string.
@@ -60,51 +47,13 @@ pub fn is_target_layout(current_layout: &str, target_layout: &str) -> bool {
 ///     The caller is responsible for ensuring that `target_layout` represents a valid
 ///     intended layout name or identifier.
 pub unsafe fn switch_to_layout(target_layout: &str) {
+    println!("DEBUG: switch_to_layout requested for '{}'", target_layout);
     let target_upper = target_layout.to_uppercase();
-
-    let search_patterns = match target_upper.as_str() {
-        "US" | "EN" | "ENGLISH" => vec!["com.apple.keylayout.US", "com.apple.keylayout.ABC", "US"],
-        "RU" | "RUSSIAN" => vec!["com.apple.keylayout.Russian", "Russian"],
-        "CN" | "CHINESE" | "PINYIN" | "ZH" => vec![
-            "com.apple.keylayout.PinyinSimplified",
-            "com.apple.inputmethod.SCIM.Pinyin",
-            "Pinyin",
-            "简体",
-        ],
-        "HI" | "HINDI" | "DEVANAGARI" => vec![
-            "com.apple.keylayout.Devanagari-QWERTY",
-            "com.apple.keylayout.Hindi-QWERTY",
-            "Hindi",
-            "Devanagari",
-            "देवनागरी",
-        ],
-        _ => vec![target_layout],
-    };
-
-    if target_upper == "US" || target_upper == "EN" || target_upper == "ENGLISH" {
-        let us_lang =
-            CFStringCreateWithCString(nil, c"en".as_ptr() as *const c_char, K_UTF8_ENCODING);
-        if us_lang != nil {
-            let us_source = TISCopyInputSourceForLanguage(us_lang);
-            CFRelease(us_lang);
-
-            if us_source != nil {
-                let result = TISSelectInputSource(us_source);
-                CFRelease(us_source);
-
-                if result == 0 {
-                    println!("Successfully switched to layout: {}", target_layout);
-                    thread::sleep(Duration::from_millis(100));
-                    monitor::update_keyboard_layout();
-                    return;
-                }
-            }
-        }
-    }
 
     let input_sources = TISCreateInputSourceList(nil, true);
     if input_sources != nil {
         let count = CFArrayGetCount(input_sources);
+        println!("DEBUG: Found {} input sources", count);
 
         for i in 0..count {
             let source = CFArrayGetValueAtIndex(input_sources, i);
@@ -132,8 +81,12 @@ pub unsafe fn switch_to_layout(target_layout: &str) {
                             if let Ok(id_str) =
                                 CStr::from_ptr(buffer.as_ptr() as *const c_char).to_str()
                             {
-                                for pattern in &search_patterns {
-                                    if id_str.contains(pattern) {
+                                println!("DEBUG: Inspecting Source ID: '{}'", id_str);
+                                // Strict token match for ID
+                                let tokens: Vec<&str> = id_str.split(|c: char| !c.is_alphanumeric()).collect();
+                                for token in tokens {
+                                    if token.to_uppercase() == target_upper {
+                                        println!("DEBUG: MATCH! ID token '{}' == target '{}'", token, target_upper);
                                         found = true;
                                         break;
                                     }
@@ -158,11 +111,23 @@ pub unsafe fn switch_to_layout(target_layout: &str) {
                             if let Ok(name_str) =
                                 CStr::from_ptr(buffer.as_ptr() as *const c_char).to_str()
                             {
-                                for pattern in &search_patterns {
-                                    if name_str.to_uppercase().contains(&pattern.to_uppercase()) {
+                                println!("DEBUG: Inspecting Source Name: '{}'", name_str);
+                                // Token match for Name
+                                let tokens: Vec<&str> = name_str.split(|c: char| !c.is_alphanumeric()).collect();
+                                for token in tokens {
+                                    if token.to_uppercase() == target_upper {
+                                        println!("DEBUG: MATCH! Name token '{}' == target '{}'", token, target_upper);
                                         found = true;
                                         break;
                                     }
+                                }
+                                
+                                // Fallback for names with spaces if strict token failed (e.g. if target is "Russian - PC")
+                                if !found && target_layout.contains(' ') {
+                                     if name_str.to_uppercase().contains(&target_upper) {
+                                         println!("DEBUG: MATCH! Name '{}' contains target '{}'", name_str, target_upper);
+                                         found = true;
+                                     }
                                 }
                             }
                         }
@@ -205,15 +170,16 @@ pub unsafe fn check_and_switch_layout_by_rules() {
         &*std::ptr::addr_of!(state::APP_LAYOUT_RULES),
     ) {
         if let Some(target_layout) = rules.get(app_name) {
-            if let Some(ref current_layout) = *std::ptr::addr_of!(state::CURRENT_KEYBOARD_LAYOUT) {
+             if let Some(ref current_layout) = *std::ptr::addr_of!(state::CURRENT_KEYBOARD_LAYOUT) {
+                // println!("DEBUG: Rule check: App='{}', Target='{}', Current='{}'", app_name, target_layout, current_layout);
                 if !is_target_layout(current_layout, target_layout) {
-                    println!(
-                        "Application '{}' is active, switching to layout '{}'...",
-                        app_name, target_layout
-                    );
-                    switch_to_layout(target_layout);
-                }
-            }
+                     println!(
+                         "Decision: App '{}' requires '{}', but current is '{}'. Switching...",
+                         app_name, target_layout, current_layout
+                     );
+                     switch_to_layout(target_layout);
+                 }
+             }
             return;
         }
 

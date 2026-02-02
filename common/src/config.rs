@@ -72,3 +72,9 @@ pub fn load_or_create_config() -> HashMap<String, String> {
 
     default_config
 }
+
+pub fn save_config(config: &HashMap<String, String>) -> std::io::Result<()> {
+    let config_path = get_config_path();
+    let json_content = serde_json::to_string_pretty(config)?;
+    fs::write(config_path, json_content)
+}
