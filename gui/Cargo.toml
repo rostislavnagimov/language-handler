@@ -1,0 +1,31 @@
+[package]
+name = "lh-gui"
+version.workspace = true
+edition.workspace = true
+
+[package.metadata.bundle]
+name = "Language Handler"
+identifier = "com.languagehandler.app"
+icon = ["assets/icon.icns"]
+version = "1.0.0"
+copyright = "Copyright © 2026 Rostislav Nagimov"
+category = "Productivity"
+short_description = "Automatic keyboard layout switcher"
+long_description = """
+Language Handler automatically switches your keyboard layout
+based on the active application.
+"""
+
+[lints.rust]
+unexpected_cfgs = "allow"
+
+[[bin]]
+name = "lh-gui"
+path = "src/main.rs"
+
+[dependencies]
+common = { path = "../common" }
+cocoa.workspace = true
+objc.workspace = true
+serde_json.workspace = true
+libc = "0.2.180"

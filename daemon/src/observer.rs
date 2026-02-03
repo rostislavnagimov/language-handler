@@ -1,5 +1,5 @@
-use crate::core::{monitor, switcher};
 use crate::state;
+use crate::{monitor, switcher};
 
 use cocoa::base::{id, nil};
 use cocoa::foundation::{NSAutoreleasePool, NSString};
@@ -55,17 +55,7 @@ extern "C" fn keyboard_changed_callback(_self: &Object, _cmd: Sel, _notification
         }
     }
 }
-/// Creates an observer and subscribes it to system notifications for application
-/// activation and keyboard layout changes.
-///
-/// # Safety
-///
-/// This function is unsafe because:
-/// 1. It calls FFI functions (Objective-C runtime via `msg_send!`) to interact with Cocoa.
-/// 2. It dynamically creates and registers an Objective-C class (`WindowObserver`) at runtime.
-/// 3. It interacts with global system notification centers.
-///     This function should ideally be called only once during application initialization
-///     and from the main thread.
+
 pub unsafe fn setup_observers() {
     let observer_class = create_observer_class();
     let observer: id = msg_send![observer_class, new];

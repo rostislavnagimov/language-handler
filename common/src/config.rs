@@ -1,16 +1,7 @@
+use crate::paths::get_config_path;
 use serde_json;
 use std::collections::HashMap;
 use std::fs;
-use std::path::{Path, PathBuf};
-
-pub fn get_config_path() -> PathBuf {
-    let home = std::env::var("HOME").unwrap_or_else(|_| "/Users/default".to_string());
-    Path::new(&home)
-        .join("Library")
-        .join("Application Support")
-        .join("language-handler")
-        .join("config.json")
-}
 
 fn create_default_config() -> HashMap<String, String> {
     let mut config = HashMap::new();
@@ -79,4 +70,10 @@ pub fn load_or_create_config() -> HashMap<String, String> {
     }
 
     default_config
+}
+
+pub fn save_config(config: &HashMap<String, String>) -> std::io::Result<()> {
+    let config_path = get_config_path();
+    let json_content = serde_json::to_string_pretty(config)?;
+    fs::write(config_path, json_content)
 }
