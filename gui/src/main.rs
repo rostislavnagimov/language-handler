@@ -4,6 +4,7 @@ use cocoa::foundation::NSAutoreleasePool;
 use objc::{class, msg_send, sel, sel_impl};
 
 mod gui;
+mod helpers;
 
 // Временно: reexport daemon модулей для совместимости
 // В будущем GUI не будет содержать эту логику
