@@ -13,7 +13,7 @@ fn main() {
     unsafe {
         let _pool = NSAutoreleasePool::new(nil);
         let app = NSApp();
-        
+
         app.setActivationPolicy_(
             cocoa::appkit::NSApplicationActivationPolicy::NSApplicationActivationPolicyRegular,
         );
@@ -24,7 +24,10 @@ fn main() {
         let _: () = msg_send![current_app, activateWithOptions: 1 << 1];
 
         println!("GUI started.");
-        println!("Config file: {}", common::paths::get_config_path().display());
+        println!(
+            "Config file: {}",
+            common::paths::get_config_path().display()
+        );
 
         let _: () = msg_send![app, run];
     }

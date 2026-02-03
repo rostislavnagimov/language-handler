@@ -3,6 +3,9 @@ name = "lh-daemon"
 version.workspace = true
 edition.workspace = true
 
+[lints.rust]
+unexpected_cfgs = "allow"
+
 [[bin]]
 name = "lh-daemon"
 path = "src/main.rs"

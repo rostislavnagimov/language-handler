@@ -16,8 +16,7 @@ fn main() {
 
         let _pool = NSAutoreleasePool::new(nil);
         let app = NSApp();
-        
-        // Запуск без GUI (headless)
+
         app.setActivationPolicy_(NSApplicationActivationPolicyProhibited);
 
         observer::setup_observers();
@@ -32,7 +31,10 @@ fn main() {
         }
 
         println!("\nDaemon started. Press Ctrl+C to exit.");
-        println!("Config file: {}", common::paths::get_config_path().display());
+        println!(
+            "Config file: {}",
+            common::paths::get_config_path().display()
+        );
 
         let _: () = msg_send![app, run];
     }

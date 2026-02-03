@@ -1,8 +1,7 @@
+use crate::paths::get_config_path;
 use serde_json;
 use std::collections::HashMap;
 use std::fs;
-use std::path::{Path, PathBuf};
-use crate::paths::get_config_path;
 
 fn create_default_config() -> HashMap<String, String> {
     let mut config = HashMap::new();

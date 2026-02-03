@@ -16,10 +16,7 @@ use objc::declare::ClassDecl;
 use objc::runtime::{Object, Sel};
 
 pub fn is_daemon_running() -> bool {
-    let output = Command::new("pgrep")
-        .arg("-x")
-        .arg("lh-daemon")
-        .output();
+    let output = Command::new("pgrep").arg("-x").arg("lh-daemon").output();
 
     match output {
         Ok(out) => out.status.success(),
@@ -48,14 +45,11 @@ pub fn start_daemon() {
     let _ = Command::new("./target/debug/lh-daemon")
         .stdout(Stdio::null())
         .stderr(Stdio::null())
-        .spawn(); 
+        .spawn();
 }
 
 pub fn stop_daemon() {
-    let _ = Command::new("pkill")
-        .arg("-x")
-        .arg("lh-daemon")
-        .output();
+    let _ = Command::new("pkill").arg("-x").arg("lh-daemon").output();
 }
 
 pub unsafe fn get_available_languages() -> Vec<String> {
@@ -177,7 +171,7 @@ pub unsafe fn get_installed_apps() -> Vec<(String, id)> {
                         // Устанавливаем размер иконки 32x32
                         let size = NSSize::new(32.0, 32.0);
                         let _: () = msg_send![icon, setSize: size];
-                        // let _: id = msg_send![icon, retain]; // iconForFile usually returns autoreleased object? 
+                        // let _: id = msg_send![icon, retain]; // iconForFile usually returns autoreleased object?
                         // If we store it in Vec, we should retain it if we want to keep it alive?
                         // Original code had retain.
                         let _: id = msg_send![icon, retain];
