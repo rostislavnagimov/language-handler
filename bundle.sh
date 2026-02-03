@@ -38,7 +38,7 @@ cat > "$CONTENTS_DIR/Info.plist" <<EOF
     <key>CFBundleIconFile</key>
     <string>AppIcon</string>
     <key>CFBundleIdentifier</key>
-    <string>com.rostislavnagimov.language-handler</string>
+    <string>com.languagehandler.app</string>
     <key>CFBundleName</key>
     <string>$APP_NAME</string>
     <key>CFBundlePackageType</key>

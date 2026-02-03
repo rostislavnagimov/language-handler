@@ -3,10 +3,11 @@ use cocoa::base::{id, nil};
 use cocoa::foundation::{NSAutoreleasePool, NSPoint, NSRect, NSSize, NSString};
 use objc::{class, msg_send, sel, sel_impl};
 use std::fs;
-use std::os::raw::c_char;
+use std::os::raw::{c_char, c_int};
 use std::path::{Path, PathBuf};
 use std::thread;
 use std::time::Duration;
+use std::process::Command;
 
 use objc::declare::ClassDecl;
 use objc::runtime::{Object, Sel};
@@ -17,7 +18,7 @@ static mut STATUS_BAR_VIEW: usize = 0;
 static mut STATUS_LABEL: usize = 0;
 static mut CONTROL_BUTTON: usize = 0;
 
-fn register_status_updater_class() -> *const objc::runtime::Class {
+pub fn register_status_updater_class() -> *const objc::runtime::Class {
     if let Some(cls) = objc::runtime::Class::get("StatusUpdater") {
         return cls;
     }
@@ -41,6 +42,10 @@ fn register_status_updater_class() -> *const objc::runtime::Class {
         decl.add_method(
             sel!(popupAction:),
             status_updater_popup_action as extern "C" fn(&Object, Sel, id),
+        );
+        decl.add_method(
+            sel!(applicationShouldTerminateAfterLastWindowClosed:),
+            application_should_terminate_after_last_window_closed as extern "C" fn(&Object, Sel, id) -> bool,
         );
     }
 
@@ -204,9 +209,16 @@ extern "C" fn status_updater_timer_fired(_self: &Object, _cmd: Sel, _timer: id) 
     }
 }
 
+extern "C" fn application_should_terminate_after_last_window_closed(
+    _self: &Object,
+    _cmd: Sel,
+    _sender: id,
+) -> bool {
+    true
+}
+
 fn get_launch_agent_path() -> PathBuf {
-    let home = std::env::var("HOME").unwrap_or_else(|_| "/".to_string());
-    Path::new(&home).join("Library/LaunchAgents/com.rostislavnagimov.lh-daemon.plist")
+    common::paths::get_launchagent_path()
 }
 
 fn get_daemon_path() -> PathBuf {
@@ -242,7 +254,7 @@ fn enable_autostart() -> Result<(), String> {
 <plist version="1.0">
 <dict>
     <key>Label</key>
-    <string>com.rostislavnagimov.lh-daemon</string>
+    <string>com.languagehandler.daemon</string>
     <key>ProgramArguments</key>
     <array>
         <string>{}</string>
@@ -273,9 +285,13 @@ fn enable_autostart() -> Result<(), String> {
 fn disable_autostart() -> Result<(), String> {
     let path = get_launch_agent_path();
     if path.exists() {
-        // Note: We do NOT call 'launchctl unload' here.
-        // We just remove the plist so it won't start on NEXT login.
-        // Current process (if running) is unaffected.
+        // To properly remove from "Login Items & Extensions", we should bootout it
+        let uid = unsafe { libc::getuid() };
+        let service_target = format!("gui/{}/com.languagehandler.daemon", uid);
+        let _ = Command::new("launchctl")
+            .args(["bootout", &service_target])
+            .output();
+
         fs::remove_file(&path).map_err(|e| e.to_string())?;
     }
     Ok(())
@@ -287,6 +303,7 @@ static mut AUTOSTART_LABEL: usize = 0;
 static mut AUTOSTART_BUTTON: usize = 0;
 
 pub unsafe fn create_and_show_window() -> id {
+    println!("DEBUG: create_and_show_window start");
     let _pool = NSAutoreleasePool::new(nil);
 
     let window: id = msg_send![class!(NSWindow), alloc];
